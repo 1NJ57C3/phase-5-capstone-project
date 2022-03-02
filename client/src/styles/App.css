@@ -1,0 +1,148 @@
+div.App {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  text-align: center;
+  font-size: x-large;
+  height: 100vh;
+  width: 100vw;
+}
+
+button, input {
+  background-color: black;
+  color: grey;
+  border: 1.75px solid grey;
+  border-radius: 5px;
+  text-align: center;
+  font-size: x-large;
+  margin: 0.6rem;
+  padding: 0.5rem 0.75rem;
+  transition: 0.4s;
+}
+
+input {
+  width: 30%;
+}
+
+button:hover {
+  background-color: grey;
+  color: black;
+}
+
+/* ! Login/LoginForm/Signup Styles */
+
+div.Auth, form.Auth, p.Auth {
+  background-color: black;
+  color: grey;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  font-size: large;
+  min-height: 100vh;
+  min-width: 100vw;
+  line-height: 1.5rem;
+}
+
+span.Auth-link {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+div.auth-errors {
+  padding: 0.5rem;
+  color: red;
+}
+
+p.auth-errors {
+  margin: 0;
+}
+
+/* TODO NavBar Styles */
+
+div.NavBar {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: auto;
+  padding: 1rem 1rem;
+}
+
+div.NavBar button {
+  border: 0.5px solid grey;
+  font-size: large;
+  margin: 0;
+}
+
+div.nav-header {
+  width: fit-content;
+}
+
+div.nav-controls {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  font-size: large;
+  gap: 1rem;
+}
+
+/* TODO Main/Game Styles */
+
+div.Game {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  text-align: left;
+  height: 100%;
+  width: auto;
+  padding: 0vh 1rem 1rem 1rem;
+}
+
+div.game-prompts {
+  display: flex;
+  flex-direction: column-reverse;
+  overflow-wrap: break-word;
+  overflow: auto;
+  height: 100%;
+  margin: 0.6rem 0rem;
+  padding: 0.6rem 1rem 0.6rem 1rem;
+}
+
+div.game-input {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+}
+
+input#game-input, input#game-input:focus {
+  border: 1px groove grey;
+  text-align: left;
+  width: 100%;
+  margin: -1px;
+  outline: none;
+}
+
+
+
+
+/* ! create-react-app stuff */
+
+/* @media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+} */
+
+/* @keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+} */
