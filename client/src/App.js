@@ -10,6 +10,7 @@ function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState([])
+  const [maps, setMaps] = useState([])
 
   // ! [DEPRECATED] - INITIAL SETUP TESTING
   // const [count, setCount] = useState(0);
@@ -29,8 +30,12 @@ function App() {
       }
     })
   }, [])
-
-  const FETCHDOWN = (URL, ACTION) => {
+  
+  useEffect(() => {
+    FETCHDOWN("/maps", setMaps, "skipErrors")
+  }, [])
+  
+  const FETCHDOWN = (URL, ACTION, SKIPERRORHANDLING=false) => {
     setLoading(true);
     fetch(URL)
     .then(r => {
@@ -38,7 +43,7 @@ function App() {
         r.json()
         .then(ACTION)
         .then(setErrors([]))
-      } else {
+      } else if (SKIPERRORHANDLING === false) {
         r.json()
         .then(e => {
           console.error("GET Error: ", e);
@@ -74,13 +79,14 @@ function App() {
     .finally(() => setLoading(false))
   }
 
-  const FETCHDELETE = (URL, OBJ, ACTION) => {
+  const FETCHDELETE = (URL, ACTION, OBJ="") => {
     setLoading(true);
-    fetch(URL, {
+    fetch(URL+`/${OBJ}`, {
       method: "DELETE"
     })
     .then(r => {
-      if (r.ok) {r.json()
+      if (r.ok) {
+        r.json()
         .then(ACTION)
         .then(setErrors([]))
       } else {
@@ -102,7 +108,7 @@ function App() {
         <NavBar user={user} setUser={setUser} FETCHDELETE={FETCHDELETE} />
         <Routes>
           <Route path="testing" element={<h1>Test Route</h1>} />
-          <Route path="/" element={<Game />} />
+          <Route path="/" element={<Game maps={maps} user={user} />} />
           {/* // ! [DEPRECATED] - INITIAL SETUP TESTING */}
           {/* <Route path="/" element={<h1>Page Count: {count}</h1>} /> */}
         </Routes>

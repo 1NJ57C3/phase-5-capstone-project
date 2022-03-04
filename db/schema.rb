@@ -10,10 +10,32 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_02_24_061052) do
+ActiveRecord::Schema[7.0].define(version: 2022_03_03_030050) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "plpgsql"
+
+  create_table "gamesaves", force: :cascade do |t|
+    t.integer "pos_x"
+    t.integer "pos_y"
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_gamesaves_on_user_id"
+  end
+
+  create_table "maps", force: :cascade do |t|
+    t.integer "pos_x"
+    t.integer "pos_y"
+    t.string "name"
+    t.string "description"
+    t.boolean "north"
+    t.boolean "east"
+    t.boolean "south"
+    t.boolean "west"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
 
   create_table "users", force: :cascade do |t|
     t.citext "username"
@@ -22,4 +44,5 @@ ActiveRecord::Schema[7.0].define(version: 2022_02_24_061052) do
     t.datetime "updated_at", null: false
   end
 
+  add_foreign_key "gamesaves", "users"
 end

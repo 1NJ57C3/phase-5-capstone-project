@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  resources :gamesaves
+  resources :maps
   # TODO resources :users, only: [:index] # * Included for development/testing purposes -- remember to remove
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 

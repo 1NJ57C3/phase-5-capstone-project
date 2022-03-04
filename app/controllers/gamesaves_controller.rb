@@ -1,0 +1,2 @@
+class GamesavesController < ApplicationController
+end
