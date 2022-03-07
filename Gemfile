@@ -38,7 +38,7 @@ group :development, :test do
   # gem "byebug", platforms: %i[ mri mingw x64_mingw ]
   
   # gem "pry", platforms: %i[ mri mingw x64_mingw ]
-  gem "pry-byebug", platforms: %i[ mri mingw x64_mingw ]
+  gem "pry-byebug", "~> 3.9.0", platforms: %i[ mri mingw x64_mingw ]
 end
 
 # Serialize JSON output with ease!
