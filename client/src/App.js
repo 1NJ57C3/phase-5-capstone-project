@@ -10,6 +10,7 @@ function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState([])
+  const [worldmaps, setWorldmaps] = useState([])
 
   // ! [DEPRECATED] - INITIAL SETUP TESTING
   // const [count, setCount] = useState(0);
@@ -21,16 +22,18 @@ function App() {
   // }, [])
 
   useEffect(() => {
-    fetch("/me")
-    .then(r => {
-      if(r.ok){
-        r.json()
-        .then(setUser)
-      }
-    })
+    // fetch("/me")
+    // .then(r => {
+    //   if(r.ok){
+    //     r.json()
+    //     .then(setUser)
+    //   }
+    // })
+    FETCHDOWN("/me", setUser, "skipErr")
+    FETCHDOWN("/worldmaps", setWorldmaps, "skipErr")
   }, [])
 
-  const FETCHDOWN = (URL, ACTION) => {
+  const FETCHDOWN = (URL, ACTION, SKIPERRORHANDLING=false) => {
     setLoading(true);
     fetch(URL)
     .then(r => {
@@ -38,7 +41,7 @@ function App() {
         r.json()
         .then(ACTION)
         .then(setErrors([]))
-      } else {
+      } else if (!SKIPERRORHANDLING) {
         r.json()
         .then(e => {
           console.error("GET Error: ", e);
@@ -74,9 +77,9 @@ function App() {
     .finally(() => setLoading(false))
   }
 
-  const FETCHDELETE = (URL, OBJ, ACTION) => {
+  const FETCHDELETE = (URL, ACTION, OBJ="") => {
     setLoading(true);
-    fetch(URL, {
+    fetch(URL+`/${OBJ}`, {
       method: "DELETE"
     })
     .then(r => {
@@ -102,7 +105,7 @@ function App() {
         <NavBar user={user} setUser={setUser} FETCHDELETE={FETCHDELETE} />
         <Routes>
           <Route path="testing" element={<h1>Test Route</h1>} />
-          <Route path="/" element={<Game />} />
+          <Route path="/" element={<Game FETCHDOWN={FETCHDOWN} FETCHUP={FETCHUP} FETCHDELETE={FETCHDELETE} user={user} worldmaps={worldmaps} />} />
           {/* // ! [DEPRECATED] - INITIAL SETUP TESTING */}
           {/* <Route path="/" element={<h1>Page Count: {count}</h1>} /> */}
         </Routes>

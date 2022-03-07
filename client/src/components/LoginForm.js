@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 function LoginForm({ toggleLogin, FETCHUP, setUser, errors }) {
-  const [loginfo, setLoginfo] = useState({ username:"", password:"", password_confirmation:"" });
+  const [loginfo, setLoginfo] = useState({ username:"", password:"" });
 
   const handleChange = (e) => {
     setLoginfo({ ...loginfo, [e.target.id]: e.target.value });

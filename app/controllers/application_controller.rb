@@ -1,7 +1,11 @@
 class ApplicationController < ActionController::API
     include ActionController::Cookies
+
+    wrap_parameters format: []
+
     rescue_from ActiveRecord::RecordNotFound, with: :render_404
     rescue_from ActiveRecord::RecordInvalid, with: :render_422
+    
     before_action :authorize
     skip_before_action :authorize, only: [:render_404, :render_422]
     
@@ -14,6 +18,8 @@ class ApplicationController < ActionController::API
     private
 
     def authorize
+        @current_user = User.find_by(id: session[:user_id])
+        
         render json: { errors: ["Not authorized"] }, status: :unauthorized unless session.include? :user_id
     end
 

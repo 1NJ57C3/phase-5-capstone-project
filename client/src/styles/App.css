@@ -104,12 +104,12 @@ div.Game {
 
 div.game-prompts {
   display: flex;
-  flex-direction: column-reverse;
-  overflow-wrap: break-word;
-  overflow: auto;
+  flex-direction: column;
+  /* overflow-wrap: break-word; */
+  overflow-y: auto;
   height: 100%;
   margin: 0.6rem 0rem;
-  padding: 0.6rem 1rem 0.6rem 1rem;
+  padding: 0.6rem .5rem 0.6rem .5em;
 }
 
 div.game-input {
@@ -120,10 +120,13 @@ div.game-input {
 }
 
 input#game-input, input#game-input:focus {
-  border: 1px groove grey;
+  /* border: 1px groove grey; */
+  border: none;
   text-align: left;
   width: 100%;
-  margin: -1px;
+  /* margin: -1px; */
+  margin: 0;
+  padding: 0;
   outline: none;
 }
 
