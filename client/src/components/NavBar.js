@@ -1,8 +1,16 @@
 function NavBar({ user, setUser, FETCHDELETE }) {
 
-  const handleClick = (e) => {
+  const handleSave = (e) => {
+    console.log("NAVSAVE: ")
+  }
+
+  const handleLoad = (e) => {
+    console.log("NAVLOAD: ")
+  }
+
+  const handleLogout = (e) => {
     console.log("LOGGING OUT: ",user);
-    FETCHDELETE(`/logout`, setUser(null));
+    FETCHDELETE(`/logout`, () => setUser(null));
   }
 
   return(
@@ -24,7 +32,7 @@ function NavBar({ user, setUser, FETCHDELETE }) {
               </button>
             </span> 
             <span>
-              <button type="button" onClick={handleClick} >
+              <button type="button" onClick={handleLogout} >
                 Logout
               </button>
             </span>

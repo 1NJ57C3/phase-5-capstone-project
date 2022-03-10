@@ -26,6 +26,8 @@ function App() {
     FETCHDOWN("/me", setUser, "skipErr")
   }, [])
 
+  // TODO Left in for troubleshooting Worldmaps fetch async with User/Auth desync
+
   // useEffect(() => {
   //   FETCHDOWN("/worldmaps", setWorldmaps, "skipErr")
   // }, [])
@@ -83,6 +85,7 @@ function App() {
   //   })
   //   .finally(() => setLoading(false))
   // }
+  // TODO ------------------->
   
   const FETCHDOWN = (URL, ACTION, SKIPERRORHANDLING=false) => {
     setLoading(true);
