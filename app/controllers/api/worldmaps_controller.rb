@@ -1,14 +1,18 @@
-class WorldmapsController < ApplicationController
+class Api::WorldmapsController < ApplicationController
 
     def index
         render json: Worldmap.all
     end
 
     def show
-        render json: Worldmap.find_by(worldmap_params)
+        render json: Worldmap.find_by!(worldmap_search_params)
     end
 
     private
+
+    def worldmap_search_params
+        params.permit(:x, :y)
+    end
 
     def worldmap_params
         params.permit(:x, :y, :name, :description, :north, :east, :south, :west)

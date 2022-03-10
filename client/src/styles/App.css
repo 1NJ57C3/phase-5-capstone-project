@@ -1,7 +1,7 @@
 div.App {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  /* justify-content: space-between; */
   overflow: hidden;
   text-align: center;
   font-size: x-large;
@@ -28,6 +28,7 @@ input {
 button:hover {
   background-color: grey;
   color: black;
+  box-shadow: 0 0 6px 2px #a0a0a0;
 }
 
 /* ! Login/LoginForm/Signup Styles */
@@ -97,25 +98,32 @@ div.Game {
   justify-content: space-between;
   overflow: hidden;
   text-align: left;
-  height: 100%;
+  max-height: 100%;
   width: auto;
-  padding: 0vh 1rem 1rem 1rem;
+  padding: 1rem 2rem 2rem 2rem;
 }
 
 div.game-prompts {
   display: flex;
-  flex-direction: column;
+  flex-direction: column-reverse;
   /* overflow-wrap: break-word; */
   overflow-y: auto;
-  height: 100%;
-  margin: 0.6rem 0rem;
-  padding: 0.6rem .5rem 0.6rem .5em;
+  min-height: 0%;
+  max-height: 100%;
+  /* margin: 0.6rem 0rem 0; */
+  /* padding: 0.6rem 1em 0 1em; */
 }
 
-div.game-input {
+div.game-input-wrapper {
   display: flex;
   flex-direction: row;
   align-items: center;
+  width: 100%;
+  /* margin: 0; */
+  /* padding: 0rem 1em 0.6rem 1em; */
+}
+
+div.game-input {
   width: 100%;
 }
 
@@ -130,7 +138,47 @@ input#game-input, input#game-input:focus {
   outline: none;
 }
 
+/* TODO Game Select && Card Styles  */
 
+div.game-menu {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  align-items: center;
+  height: 100%;
+  width: 100%
+}
+
+span.game-menu {
+  margin: 1rem;
+}
+
+div.game-menu button {
+  border: 0.75px solid grey;
+}
+
+div.game-menu big {
+  font-size: xx-large;
+  margin: 0.75em;
+}
+
+div.game-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  border: 0.5px groove #a0a0a0;
+  border-radius: 7px;
+  width: 40%;
+  margin: 0.5rem;
+  padding: 1rem;
+  transition: .6s;
+}
+
+div.game-card:hover {
+  transform:scale(1.025, 1.025);
+  box-shadow: 0 0 6px 1px #a0a0a0, inset 0 0 6px 1px  #a0a0a0;
+}
 
 
 /* ! create-react-app stuff */

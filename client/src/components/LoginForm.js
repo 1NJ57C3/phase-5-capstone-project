@@ -9,7 +9,7 @@ function LoginForm({ toggleLogin, FETCHUP, setUser, errors }) {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    console.log("loginfo: ", loginfo);
+    console.log("login: ", loginfo.username);
     FETCHUP("/login", "POST", loginfo, setUser);
   }
 

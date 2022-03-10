@@ -1,8 +1,8 @@
-class SessionsController < ApplicationController
+class Api::SessionsController < ApplicationController
     skip_before_action :authorize, only: [:create]
 
     def create
-        u = User.find_by(username: params[:username])
+        u = User.find_by!(username: params[:username])
         if u&.authenticate(params[:password])
             session[:user_id] = u.id
             render json: u, status: 201
