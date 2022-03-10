@@ -90,7 +90,7 @@ div.nav-controls {
   gap: 1rem;
 }
 
-/* TODO Main/Game Styles */
+/* * Main/Game Styles */
 
 div.Game {
   display: flex;
@@ -138,7 +138,7 @@ input#game-input, input#game-input:focus {
   outline: none;
 }
 
-/* TODO Game Select && Card Styles  */
+/* ? Game Select && Card Styles  */
 
 div.game-menu {
   display: flex;
