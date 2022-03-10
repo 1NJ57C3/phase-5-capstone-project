@@ -1,15 +1,19 @@
 import { useEffect, useState } from "react";
 
-function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, worldmaps }) {
+function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, setUser, worldmaps, setWorldmaps }) {
   const [playerInput, setPlayerInput] = useState("");
-  const [coords, setCoords] = useState(...user.gamesaves)
+  const [coords, setCoords] = useState({})
   const [currentLocation, setCurrentLocation] = useState({})
 
   const [prompts, setPrompts] = useState([])
 
   useEffect(() => {
+    FETCHDOWN("/worldmaps", setWorldmaps, "skipErr")
+  }, [])
+
+  useEffect(() => {
     // * New gamesaves stay pristine until player saves. Old gamesaves get loaded.
-    return user.gamesaves[0].x === null ? (newGame(), console.log("Starting new game...")) : (loadGame(), console.log("Loading game..."))    
+    return !!Object.keys(user.gamesaves).length ? (loadGame("init"), console.log("Loading game...")) : (newGame(), console.log("Starting new game..."))
   }, [worldmaps])
 
   const findMap = (x, y) => {
@@ -17,14 +21,31 @@ function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, worldmaps }) {
   }
 
   const newGame = () => {
+    console.log('NEW')
     setCoords({...coords, x:0, y:0})
     setCurrentLocation(findMap(0,0))
-    setPrompts([...prompts, findMap(0,0).name, findMap(0,0).description])
+    setPrompts([findMap(0,0).description, findMap(0,0).name])
   }
 
-  const loadGame = () => {
-    setCurrentLocation(findMap(coords.x, coords.y))
-    setPrompts([...prompts, findMap(coords.x, coords.y).name, findMap(coords.x, coords.y).description])
+  const loadGame = (init=false) => {
+    console.log('LOADING')
+    setCoords({...user.gamesaves[0]})
+    setCurrentLocation(findMap(user.gamesaves[0].x, user.gamesaves[0].y))
+    !!init && setPrompts([findMap(user.gamesaves[0].x, user.gamesaves[0].y).description, findMap(user.gamesaves[0].x, user.gamesaves[0].y).name])
+  }
+
+  const saveGame = () => {
+    return !!coords.id ?
+      FETCHUP(`/gamesaves/${coords.id}`, "PATCH", coords, game => {
+        console.log("SAVED GAME AT: ", game)
+        setUser({...user, gamesaves: user.gamesaves.map(g => g.id === game.id ? game : g)})
+      }) :
+      FETCHUP(`/gamesaves/`, "POST", coords, game => {
+        console.log("SAVED NEW GAME: ", game)
+        setUser({...user, gamesaves: [game]})
+      })
+    // console.log("COORDS AT SAVE: ",coords)
+    // console.log("GAMESAVES AT SAVE: ",user.gamesaves[0])
   }
 
   // ! Deprecated -- Does not work with dynamic newGame init
@@ -39,7 +60,7 @@ function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, worldmaps }) {
   const forceKeepFocus = (e) => {
     e.target.focus()
   }
-  
+
   const handleInputChange = (e) => {
     setPlayerInput(e.target.value);
   }
@@ -47,8 +68,22 @@ function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, worldmaps }) {
   const handleInputSubmit = (e) => {
     if (e.key === "Enter") {
       const splitInput = playerInput.toLowerCase().split(" ")
+
+      const filterHelp = splitInput.filter(input => input === ".help")
+      !!filterHelp.length && cmdHelp();
+
+      const filterSave = splitInput.filter(input => input === ".save")
+      !!filterSave.length && cmdSave();
+
+      const filterLoad = splitInput.filter(input => input === ".load")
+      !!filterLoad.length && cmdLoad();
+
       const filterDirection = splitInput.filter(input => input === "north" || input === "east" || input === "south" || input === "west")
-      !!filterDirection.length ? cmdMove(filterDirection[0]) : /*await errPrompt()*/ console.log("You can't do that");
+      !!filterDirection.length && cmdMove(filterDirection[0])
+      
+      // errPrompt()
+      // TODO ERROR HANDLING
+      // console.log("You can't do that");
       setPlayerInput("");
     }
   }
@@ -63,7 +98,7 @@ function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, worldmaps }) {
   const handleUpdateLocation = (direction) => {
     const newLocation = worldmaps.find(map => map.x === coords.x && map.y === coords.y);
     setCurrentLocation(newLocation);
-    return currentLocation[direction] ? setPrompts([...prompts, "> "+playerInput, newLocation.name, newLocation.description]) : errPrompt();
+    return !!currentLocation[direction] ? setPrompts([newLocation.description, newLocation.name, <br />, "> "+playerInput, ...prompts]) : errPrompt();
 
     // ? Code deprecated-ish. *WANT* each of these to push into state and render as program loads to create a more interactive feel.
     // addPrompt(playerInput);
@@ -78,6 +113,35 @@ function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, worldmaps }) {
     handleUpdateLocation(direction);
   }
 
+  const cmdHelp = () => {
+    setPrompts([
+      <br />,
+      ".save : save game",
+      ".load : load game",
+      ".help : this menu",
+      "Commands:",<br />,
+      "West",
+      "South",
+      "East",
+      "North",
+      "Movement:",<br />,
+      "> "+playerInput, ...prompts
+    ])
+  }
+
+  const cmdSave = () => {
+    saveGame()
+    setPrompts([<br />, "Game saved.", "> "+playerInput, ...prompts])
+  }
+
+  const cmdLoad = () => {
+    loadGame()
+    // setPrompts([findMap(coords.x, coords.y).description, findMap(coords.x, coords.y).name, <br />,"> "+playerInput, ...prompts])
+    // debugger
+    // setCurrentLocation(findMap(user.gamesaves[0].x, user.gamesaves[0].y))
+    setPrompts([findMap(user.gamesaves[0].x, user.gamesaves[0].y).description, findMap(user.gamesaves[0].x, user.gamesaves[0].y).name, <br />, "Game loaded." ,"> "+playerInput, ...prompts])
+  }
+
   // const addPrompt = async (prompt) => {
   //   if (prompt === playerInput) {
   //     setPrompts([...prompts, "> "+prompt])
@@ -87,27 +151,19 @@ function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, worldmaps }) {
   // }
 
   const errPrompt = () => {
-    setPrompts([...prompts, "> "+playerInput, "You can't do that..."])
+    setPrompts(["You can't do that...", <br />, "> "+playerInput, ...prompts])
   }
-
+  
   return (
-    <div className="Game">
+    <div className="Game" onClick={e => console.log(e)}>
       <div className="game-prompts">
-        <div className="">
-          To move in a direction, type a cardinal direction into the terminal and press enter. For example, "Go North."<br />
+        {prompts.map((prompt, i) => <span className="game-prompts" key={"prompt"+i}>{prompt}</span>)}
+        <div className="game-help">
+          To move in a direction, type a cardinal direction into the terminal and press enter. For example, "Go North" and press the "Enter" key.<br />
+          Type ".help" at any time to see a list of commands.<br /><br />
         </div>        
-        {/* <div> */}
-          {/* // TODO psuedo concept code */}
-          {/* game.room<br /> */}
-          {/* game.description<br /> */}
-          {/* game.prompt ? prompt a : prompt b */}
-          {/* game.directions<br /> */}
-          {/* &gt; player.input<br /> */}
-          {/* game.response<br /> */}
-        {/* </div> */}
-        {prompts.map((prompt, i) => <span key={"prompt"+i}>{prompt}</span>)}
-        {/* {prompts.map((prompt, i) => <div key={"prompt"+i}>{prompt}</div>)} */}
-      <div className="game-input">
+      </div>
+      <div className="game-input-wrapper">
         <div className="game-input-spacer">
           &gt;&nbsp; 
         </div>
@@ -117,7 +173,6 @@ function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, worldmaps }) {
         <div className="game-input-spacer">
           &nbsp;&nbsp;
         </div>
-      </div>
       </div>
     </div>
   );
