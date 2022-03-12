@@ -21,7 +21,7 @@ function NavBar({ user, setUser, FETCHDELETE }) {
       <div className="nav-controls">
         {user &&
           <>
-            <span>
+            {/* <span>
               <button type="button">
                 Dummy
               </button>
@@ -30,7 +30,7 @@ function NavBar({ user, setUser, FETCHDELETE }) {
               <button type="button">
                 Dummy
               </button>
-            </span> 
+            </span>  */}
             <span>
               <button type="button" onClick={handleLogout} >
                 Logout

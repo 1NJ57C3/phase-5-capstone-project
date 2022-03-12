@@ -1,7 +1,7 @@
 div.App {
   display: flex;
   flex-direction: column;
-  /* justify-content: space-between; */
+  justify-content: space-between;
   overflow: hidden;
   text-align: center;
   font-size: x-large;
@@ -10,7 +10,7 @@ div.App {
 }
 
 button, input {
-  background-color: black;
+  background-color: transparent;
   color: grey;
   border: 1.75px solid grey;
   border-radius: 5px;
@@ -19,6 +19,12 @@ button, input {
   margin: 0.6rem;
   padding: 0.5rem 0.75rem;
   transition: 0.4s;
+}
+
+input:focus, input:hover {
+  outline: none;
+  transform:scale(1.025, 1.025);
+  box-shadow: 0 0 6px 1px #a0a0a0, inset 0 0 6px 1px  #a0a0a0;
 }
 
 input {
@@ -42,8 +48,8 @@ div.Auth, form.Auth, p.Auth {
   align-items: center;
   text-align: center;
   font-size: large;
-  min-height: 100vh;
-  min-width: 100vw;
+  height: 100vh;
+  width: 100vw;
   line-height: 1.5rem;
 }
 
@@ -53,12 +59,63 @@ span.Auth-link {
 }
 
 div.auth-errors {
+  display: flex;
+  flex-direction: column;
+
   padding: 0.5rem;
   color: red;
 }
 
 p.auth-errors {
   margin: 0;
+}
+
+/* TODO Jumping Placeholders */
+div.Auth {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  vertical-align: middle;
+}
+ 
+div.Auth-input {
+  position: relative;
+}
+
+/* label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  font-size: x-large;
+  margin: 1rem auto;
+  padding: 1rem auto;
+  -webkit-transition: top .2s ease-in-out, font-size .3s ease-in-out;
+  transition: top .2s ease-in-out, font-size .3s ease-in-out;
+} */
+
+label {
+  position: absolute;
+  top: 0;
+  font-size: x-large;
+  margin: 0.6rem 1rem;
+  padding: 0.5rem 0.75rem;
+  -webkit-transition: top .2s ease-in-out, font-size .2s ease-in-out;
+  transition: top .2s ease-in-out, font-size .2s ease-in-out;
+}
+
+.active {
+  background-color: transparent;
+  top: -30px;
+  font-size: large;
+  font-weight: 900;
+}
+
+div.Auth input {
+  width: 25vw;
+  font-size: x-large;
 }
 
 /* TODO NavBar Styles */
@@ -127,8 +184,10 @@ div.game-input {
   width: 100%;
 }
 
-input#game-input, input#game-input:focus {
+div.game-input input#game-input, input#game-input:focus {
   /* border: 1px groove grey; */
+  box-shadow: none;
+  transform: none;
   border: none;
   text-align: left;
   width: 100%;
