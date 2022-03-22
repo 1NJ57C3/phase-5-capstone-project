@@ -13,7 +13,7 @@ u1 = User.create!(username:"Injustice", password:"password")
 u2 = User.create!(username:"Tester", password:"password")
 
 puts "💾 Creating Gamesaves... 💾"
-g1 = u1.gamesaves.create!()
+g1 = u1.gamesaves.create!(x: 0, y: 0)
 g2 = u2.gamesaves.create!(x: 0, y: 0)
 
 puts "🗺📍🗺 Generating World... 🗺📍🗺"

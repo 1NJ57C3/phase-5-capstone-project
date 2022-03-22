@@ -23,7 +23,7 @@ button, input {
 
 input:focus, input:hover {
   outline: none;
-  transform:scale(1.025, 1.025);
+  transform: scale(1.025, 1.025);
   box-shadow: 0 0 6px 1px #a0a0a0, inset 0 0 6px 1px  #a0a0a0;
 }
 
@@ -31,7 +31,8 @@ input {
   width: 30%;
 }
 
-button:hover {
+button:focus, button:hover {
+  outline: none;
   background-color: grey;
   color: black;
   box-shadow: 0 0 6px 2px #a0a0a0;
@@ -71,19 +72,30 @@ p.auth-errors {
 }
 
 /* TODO Jumping Placeholders */
-div.Auth {
+/* div.Auth {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   vertical-align: middle;
-}
+} */
  
 div.Auth-input {
   position: relative;
 }
 
-/* label {
+/* ? Left Aligned */
+/* label { */
+  /* position: absolute; */
+  /* top: 0; */
+  /* font-size: x-large; */
+  /* margin: 0.6rem 1rem; */
+  /* padding: 0.5rem 0.75rem; */
+  /* transition: top .2s ease-in-out, font-size .2s ease-in-out; */
+/* } */
+
+/* ? Center Aligned */
+label {
   position: absolute;
   top: 0;
   left: 0;
@@ -92,29 +104,24 @@ div.Auth-input {
   font-size: x-large;
   margin: 1rem auto;
   padding: 1rem auto;
-  -webkit-transition: top .2s ease-in-out, font-size .3s ease-in-out;
-  transition: top .2s ease-in-out, font-size .3s ease-in-out;
-} */
-
-label {
-  position: absolute;
-  top: 0;
-  font-size: x-large;
-  margin: 0.6rem 1rem;
-  padding: 0.5rem 0.75rem;
-  -webkit-transition: top .2s ease-in-out, font-size .2s ease-in-out;
-  transition: top .2s ease-in-out, font-size .2s ease-in-out;
+  transition: all .2s ease-in-out;
 }
 
-.active {
+div.Auth label.active {
   background-color: transparent;
-  top: -30px;
+  top: -.6rem;
+  left: 2.75rem;
   font-size: large;
-  font-weight: 900;
+  /* transform: translate(-50%, -95%); */
+  transform: translate(-50%, -50%);
+}
+
+div.Auth label.active#password_confirmation {
+  left: 4.25rem;
 }
 
 div.Auth input {
-  width: 25vw;
+  width: 30vw;
   font-size: x-large;
 }
 
@@ -184,7 +191,7 @@ div.game-input {
   width: 100%;
 }
 
-div.game-input input#game-input, input#game-input:focus {
+div.game-input input#game-input, div.game-input input#game-input:focus {
   /* border: 1px groove grey; */
   box-shadow: none;
   transform: none;

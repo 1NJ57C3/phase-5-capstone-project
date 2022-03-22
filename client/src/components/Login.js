@@ -17,7 +17,7 @@ function Login({ FETCHUP, setUser, errors, setErrors }) {
     }
 
     const animateLabelDown = (e) => {
-        e.target.value === "" && setLabelUp("down")
+        e.target.value === "" && setLabelUp({...labelUp, [e.target.id]: "down"})
     }
     
     const resetLabels = () => {

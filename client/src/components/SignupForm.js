@@ -28,7 +28,7 @@ function SignupForm({ toggleLogin, FETCHUP, setUser, errors, animateLabelUp, ani
           <input id="password" type="password" onChange={handleChange} onFocus={animateLabelUp} onBlur={animateLabelDown} value={signupData.password} /* placeholder="Password" */ required />
         </div>
         <div className="Auth-input">
-          <label htmlFor="password_confirmation" className={labelUp.password_confirmation}>confirm password</label>
+          <label htmlFor="password_confirmation" id="password_confirmation" className={labelUp.password_confirmation}>confirm password</label>
           <input id="password_confirmation" type="password" onChange={handleChange} onFocus={animateLabelUp} onBlur={animateLabelDown} value={signupData.password_confirmation} /* placeholder="Confirm Password" */ required />
         </div>
         <button onClick={handleSignup} type="submit">Sign Up</button>

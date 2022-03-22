@@ -13,7 +13,9 @@ function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, setUser, worldmaps, setWo
 
   useEffect(() => {
     // * New gamesaves stay pristine until player saves. Old gamesaves get loaded.
-    return !!Object.keys(user.gamesaves).length ? (loadGame("init"), console.log("Loading game...")) : (newGame(), console.log("Starting new game..."))
+    // debugger
+    // return !!Object.keys(user.gamesaves).length && user.gamesaves[0].x != null ? (console.log("Game initialized... Existing save detected."), loadGame("init")) : (console.log("Game initialized..."), newGame())
+    return !!Object.keys(user.gamesaves).length ? (console.log("Game initialized... Existing save detected."), loadGame("init")) : (console.log("Game initialized..."), newGame())
   }, [worldmaps])
 
   const findMap = (x, y) => {
@@ -21,28 +23,38 @@ function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, setUser, worldmaps, setWo
   }
 
   const newGame = () => {
-    console.log('NEW')
+    console.log('NEW GAME INITIALIZED')
     setCoords({...coords, x:0, y:0})
     setCurrentLocation(findMap(0,0))
     setPrompts([findMap(0,0).description, findMap(0,0).name])
   }
 
   const loadGame = (init=false) => {
-    console.log('LOADING')
-    setCoords({...user.gamesaves[0]})
-    setCurrentLocation(findMap(user.gamesaves[0].x, user.gamesaves[0].y))
-    !!init && setPrompts([findMap(user.gamesaves[0].x, user.gamesaves[0].y).description, findMap(user.gamesaves[0].x, user.gamesaves[0].y).name])
+    console.log('LOAD GAME INITIALIZED')
+    return user.gamesaves[0].x != null ? (
+      console.log('Coordinates validation complete.'),
+      setCoords({...user.gamesaves[0]}),
+      setCurrentLocation(findMap(user.gamesaves[0].x, user.gamesaves[0].y)),
+      !!init && setPrompts([findMap(user.gamesaves[0].x, user.gamesaves[0].y).description, findMap(user.gamesaves[0].x, user.gamesaves[0].y).name])
+    ) : (
+      console.log('Coordinates validation failed... Compensating...'),
+      setCoords({...user.gamesaves[0], x: 0, y: 0}),
+      setCurrentLocation(findMap(0,0)),
+      !!init && setPrompts([findMap(0,0).description, findMap(0,0).name])
+    ),
+    console.log("GAME LOADED: ", user.gamesaves[0])
   }
 
   const saveGame = () => {
     return !!coords.id ?
       FETCHUP(`/gamesaves/${coords.id}`, "PATCH", coords, game => {
-        console.log("SAVED GAME AT: ", game)
+        console.log("SAVED (UPDATED) GAME AT: ", game)
         setUser({...user, gamesaves: user.gamesaves.map(g => g.id === game.id ? game : g)})
       }) :
       FETCHUP(`/gamesaves/`, "POST", coords, game => {
         console.log("SAVED NEW GAME: ", game)
         setUser({...user, gamesaves: [game]})
+        setCoords({...coords, id: game.id})
       })
     // console.log("COORDS AT SAVE: ",coords)
     // console.log("GAMESAVES AT SAVE: ",user.gamesaves[0])
@@ -80,10 +92,10 @@ function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, setUser, worldmaps, setWo
 
       const filterDirection = splitInput.filter(input => input === "north" || input === "east" || input === "south" || input === "west")
       !!filterDirection.length && cmdMove(filterDirection[0])
-      
-      // errPrompt()
-      // TODO ERROR HANDLING
-      // console.log("You can't do that");
+
+      // * ERROR HANDLING
+
+      !/^north$|^east$|^south$|^west$|^.help$|^.save$|^.load$/.test(splitInput) && errPrompt();
       setPlayerInput("");
     }
   }
@@ -153,7 +165,7 @@ function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, setUser, worldmaps, setWo
   const errPrompt = () => {
     setPrompts(["You can't do that...", <br />, "> "+playerInput, ...prompts])
   }
-  
+
   return (
     <div className="Game" onClick={e => console.log(e)}>
       <div className="game-prompts">
