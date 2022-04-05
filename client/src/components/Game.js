@@ -2,42 +2,41 @@ import { useEffect, useState } from "react";
 
 function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, setUser, worldmaps, setWorldmaps }) {
   const [playerInput, setPlayerInput] = useState("");
-  const [coords, setCoords] = useState({})
-  const [currentLocation, setCurrentLocation] = useState({})
-
-  const [prompts, setPrompts] = useState([])
+  const [coords, setCoords] = useState({}) // * GameID (if applicable) and player's current coordinates
+  const [currentLocation, setCurrentLocation] = useState({}) // * worldmap that matches player's current coordinates
+  const [prompts, setPrompts] = useState([]) // * Messages displayed in Game terminal
 
   useEffect(() => {
     FETCHDOWN("/worldmaps", setWorldmaps, "skipErr")
   }, [])
 
   useEffect(() => {
-    // * New gamesaves stay pristine until player saves. Old gamesaves get loaded.
-    // debugger
-    // return !!Object.keys(user.gamesaves).length && user.gamesaves[0].x != null ? (console.log("Game initialized... Existing save detected."), loadGame("init")) : (console.log("Game initialized..."), newGame())
+    // * New gamesaves stay pristine until player saves. Old gamesaves get loaded. Less visual bloat at GameMenu.
     return !!Object.keys(user.gamesaves).length ? (console.log("Game initialized... Existing save detected."), loadGame("init")) : (console.log("Game initialized..."), newGame())
   }, [worldmaps])
 
   const findMap = (x, y) => {
+    // * Find worldmap that matches coordinates (params)
     return !!worldmaps.length && worldmaps.find(map => map.x === x && map.y === y)
   }
 
   const newGame = () => {
-    console.log('NEW GAME INITIALIZED')
+    console.log("INITIALIZING NEW GAME")
     setCoords({...coords, x:0, y:0})
     setCurrentLocation(findMap(0,0))
     setPrompts([findMap(0,0).description, findMap(0,0).name])
+    console.log("GAME STARTED")
   }
 
   const loadGame = (init=false) => {
-    console.log('LOAD GAME INITIALIZED')
+    console.log("INITIALIZING LOAD GAME SEQUENCE")
     return user.gamesaves[0].x != null ? (
-      console.log('Coordinates validation complete.'),
+      console.log("Coordinates validation complete."),
       setCoords({...user.gamesaves[0]}),
       setCurrentLocation(findMap(user.gamesaves[0].x, user.gamesaves[0].y)),
       !!init && setPrompts([findMap(user.gamesaves[0].x, user.gamesaves[0].y).description, findMap(user.gamesaves[0].x, user.gamesaves[0].y).name])
     ) : (
-      console.log('Coordinates validation failed... Compensating...'),
+      console.log("Coordinates validation failed... Adjusting..."),
       setCoords({...user.gamesaves[0], x: 0, y: 0}),
       setCurrentLocation(findMap(0,0)),
       !!init && setPrompts([findMap(0,0).description, findMap(0,0).name])
@@ -46,28 +45,22 @@ function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, setUser, worldmaps, setWo
   }
 
   const saveGame = () => {
+    // * if Game ID exists in coords state
     return !!coords.id ?
+      // * update corresponding save.
       FETCHUP(`/gamesaves/${coords.id}`, "PATCH", coords, game => {
         console.log("SAVED (UPDATED) GAME AT: ", game)
         setUser({...user, gamesaves: user.gamesaves.map(g => g.id === game.id ? game : g)})
       }) :
+      // * Otherwise, create new save.
       FETCHUP(`/gamesaves/`, "POST", coords, game => {
         console.log("SAVED NEW GAME: ", game)
         setUser({...user, gamesaves: [game]})
         setCoords({...coords, id: game.id})
-      })
-    // console.log("COORDS AT SAVE: ",coords)
-    // console.log("GAMESAVES AT SAVE: ",user.gamesaves[0])
+      }),
+    console.log("OLD COORDS AT SAVE: ",user.gamesaves[0]),
+    console.log("NEW COORDS AT SAVE: ",coords);
   }
-
-  // ! Deprecated -- Does not work with dynamic newGame init
-  // const checkLocation = () => {
-  //   const {x, y} = coords;
-  //   console.log("GAME/X: ",x);
-  //   console.log("GAME/Y: ",y);
-  //   console.log("GAME/MAPS: ",worldmaps);
-  //   console.log("GAME/CURRENT: ",worldmaps.find(map => map.x === x && map.y === y))
-  // }
 
   const forceKeepFocus = (e) => {
     e.target.focus()
@@ -94,8 +87,9 @@ function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, setUser, worldmaps, setWo
       !!filterDirection.length && cmdMove(filterDirection[0])
 
       // * ERROR HANDLING
-
-      !/^north$|^east$|^south$|^west$|^.help$|^.save$|^.load$/.test(splitInput) && errPrompt();
+      // TODO Discovered this is *too* strict -- No longer allows looser player commands
+      /* !/^north$|^east$|^south$|^west$|^.help$|^.save$|^.load$/.test(splitInput) && errPrompt(); */
+      ![...filterHelp, ...filterSave, ...filterLoad, ...filterDirection].length && errPrompt();
       setPlayerInput("");
     }
   }
@@ -111,17 +105,10 @@ function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, setUser, worldmaps, setWo
     const newLocation = worldmaps.find(map => map.x === coords.x && map.y === coords.y);
     setCurrentLocation(newLocation);
     return !!currentLocation[direction] ? setPrompts([newLocation.description, newLocation.name, <br />, "> "+playerInput, ...prompts]) : errPrompt();
-
-    // ? Code deprecated-ish. *WANT* each of these to push into state and render as program loads to create a more interactive feel.
-    // addPrompt(playerInput);
-    // addPrompt(newLocation.name);
-    // addPrompt(newLocation.description);
   }
 
   const cmdMove = (direction) => {
-    // console.log(`Before MOVE: ${coords.x}, ${coords.y}`);
     handleUpdateCoords(direction);
-    // console.log(`After MOVE: ${coords.x}, ${coords.y}`);
     handleUpdateLocation(direction);
   }
 
@@ -148,9 +135,6 @@ function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, setUser, worldmaps, setWo
 
   const cmdLoad = () => {
     loadGame()
-    // setPrompts([findMap(coords.x, coords.y).description, findMap(coords.x, coords.y).name, <br />,"> "+playerInput, ...prompts])
-    // debugger
-    // setCurrentLocation(findMap(user.gamesaves[0].x, user.gamesaves[0].y))
     setPrompts([findMap(user.gamesaves[0].x, user.gamesaves[0].y).description, findMap(user.gamesaves[0].x, user.gamesaves[0].y).name, <br />, "Game loaded." ,"> "+playerInput, ...prompts])
   }
 
