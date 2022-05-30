@@ -2,6 +2,9 @@ Rails.application.routes.draw do
   namespace :api do
     resources :gamesaves
     resources :worldmaps, only: [:index, :show]
+    # resources :world_drops
+    resources :game_drops, only: [:index, :create, :destroy]
+    resources :drops, only: [:index, :show]
     # TODO resources :users, only: [:index] # * Included for development/testing purposes -- remember to remove
     # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
   

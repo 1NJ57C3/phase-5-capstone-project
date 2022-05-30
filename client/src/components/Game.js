@@ -5,6 +5,7 @@ function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, setUser, worldmaps, setWo
   const [coords, setCoords] = useState({}) // * GameID (if applicable) and player's current coordinates
   const [currentLocation, setCurrentLocation] = useState({}) // * worldmap that matches player's current coordinates
   const [prompts, setPrompts] = useState([]) // * Messages displayed in Game terminal
+  // const [inventory, setInventory] = useState([]) // * Inventory
 
   useEffect(() => {
     FETCHDOWN("/worldmaps", setWorldmaps, "skipErr")
@@ -22,7 +23,7 @@ function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, setUser, worldmaps, setWo
 
   const newGame = () => {
     console.log("INITIALIZING NEW GAME")
-    setCoords({...coords, x:0, y:0})
+    setCoords({...coords, x:0, y:0, user_id: user.id, drops: []})
     setCurrentLocation(findMap(0,0))
     setPrompts([findMap(0,0).description, findMap(0,0).name])
     console.log("GAME STARTED")
@@ -30,18 +31,20 @@ function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, setUser, worldmaps, setWo
 
   const loadGame = (init=false) => {
     console.log("INITIALIZING LOAD GAME SEQUENCE")
-    return user.gamesaves[0].x != null ? (
+    // return (user.gamesaves[0].x != null ? (
+    return (!!user.gamesaves.length && user.gamesaves[0].x != null ? (
       console.log("Coordinates validation complete."),
       setCoords({...user.gamesaves[0]}),
       setCurrentLocation(findMap(user.gamesaves[0].x, user.gamesaves[0].y)),
-      !!init && setPrompts([findMap(user.gamesaves[0].x, user.gamesaves[0].y).description, findMap(user.gamesaves[0].x, user.gamesaves[0].y).name])
+      !!init && setPrompts([findMap(user.gamesaves[0].x, user.gamesaves[0].y).description, findMap(user.gamesaves[0].x, user.gamesaves[0].y).name]),
+      console.log("GAME LOADED: ", user.gamesaves[0])
     ) : (
       console.log("Coordinates validation failed... Adjusting..."),
       setCoords({...user.gamesaves[0], x: 0, y: 0}),
       setCurrentLocation(findMap(0,0)),
-      !!init && setPrompts([findMap(0,0).description, findMap(0,0).name])
-    ),
-    console.log("GAME LOADED: ", user.gamesaves[0])
+      !!init && setPrompts([findMap(0,0).description, findMap(0,0).name]),
+      console.log("Gamesave not detected... Restarting game", coords)
+    ))
   }
 
   const saveGame = () => {
@@ -58,9 +61,13 @@ function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, setUser, worldmaps, setWo
         setUser({...user, gamesaves: [game]})
         setCoords({...coords, id: game.id})
       }),
-    console.log("OLD COORDS AT SAVE: ",user.gamesaves[0]),
-    console.log("NEW COORDS AT SAVE: ",coords);
+      console.log("OLD COORDS AT SAVE: ",user.gamesaves[0]),
+      console.log("NEW COORDS AT SAVE: ",coords);
   }
+
+  // const saveDrops = () => {
+  //   return !!coords.id ? FETCHUP(`/game_drops/${coords.id}`, "PATCH", coords.drops, game => {console.log("DROPS")}) : false;
+  // }
 
   const forceKeepFocus = (e) => {
     e.target.focus()
@@ -84,13 +91,21 @@ function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, setUser, worldmaps, setWo
       !!filterLoad.length && cmdLoad();
 
       const filterDirection = splitInput.filter(input => input === "north" || input === "east" || input === "south" || input === "west")
-      !!filterDirection.length && cmdMove(filterDirection[0])
+      !!filterDirection.length && cmdMove(filterDirection[0]);
+
+      const filterOpenChest = splitInput.filter(input => input === "open" || input === "chest")
+      // // !!filterOpenChest.length && cmdOpenChest();
+      filterOpenChest.length >= 2 && cmdOpenChest()
+
+      const filterLoot = splitInput.filter(input => input === "take" || input === "loot")
+      const splitLootInput = playerInput.toLowerCase().split(/take |loot /).pop()
+      !!filterLoot.length && cmdLoot(splitLootInput)
+
+      // * Clear input bar
+      setPlayerInput("");
 
       // * ERROR HANDLING
-      // TODO Discovered this is *too* strict -- No longer allows looser player commands
-      /* !/^north$|^east$|^south$|^west$|^.help$|^.save$|^.load$/.test(splitInput) && errPrompt(); */
-      ![...filterHelp, ...filterSave, ...filterLoad, ...filterDirection].length && errPrompt();
-      setPlayerInput("");
+      filterOpenChest.length >= 2 || ![...filterHelp, ...filterSave, ...filterLoad, ...filterDirection,/* ...filterOpenChest,*/ ...filterLoot].length && errPrompt();
     }
   }
   
@@ -115,10 +130,13 @@ function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, setUser, worldmaps, setWo
   const cmdHelp = () => {
     setPrompts([
       <br />,
-      ".save : save game",
-      ".load : load game",
-      ".help : this menu",
+      ".save - save game",
+      ".load - load game",
+      ".help - show this menu",
       "Commands:",<br />,
+      "\"take\" or \"loot\" item",
+      "\"open chest\"",
+      "Environment:",<br />,
       "West",
       "South",
       "East",
@@ -135,19 +153,58 @@ function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, setUser, worldmaps, setWo
 
   const cmdLoad = () => {
     loadGame()
-    setPrompts([findMap(user.gamesaves[0].x, user.gamesaves[0].y).description, findMap(user.gamesaves[0].x, user.gamesaves[0].y).name, <br />, "Game loaded." ,"> "+playerInput, ...prompts])
+    !!user.gamesaves.length && user.gamesaves[0].x != null ? 
+      setPrompts([findMap(user.gamesaves[0].x, user.gamesaves[0].y).description, findMap(user.gamesaves[0].x, user.gamesaves[0].y).name, <br />, "Game loaded." ,"> "+playerInput, ...prompts])
+       : 
+      setPrompts([findMap(0,0).description, findMap(0,0).name, <br />, "Game loaded." ,"> "+playerInput, ...prompts])
   }
-
-  // const addPrompt = async (prompt) => {
-  //   if (prompt === playerInput) {
-  //     setPrompts([...prompts, "> "+prompt])
-  //   } else {
-  //     setPrompts([...prompts, prompt])
-  //   }
-  // }
 
   const errPrompt = () => {
     setPrompts(["You can't do that...", <br />, "> "+playerInput, ...prompts])
+  }
+
+  const cmdOpenChest = () => {
+    const unlootedDrops = currentLocation.drops.filter(currentLocationDrop => !coords.drops.some(gameStateDrop => gameStateDrop.id === currentLocationDrop.id))
+  
+    // ! [DEPRECATED] -- No longer working after persisting inventory -- Two identical instances of an object do not evaluate `true`
+    /* !!currentLocation.drops.length ? setPrompts([currentLocation.drops.map(drop => !coords.drops.includes(drop) && <li key={drop.id}>{drop.name}</li>), "You opened the chest. Inside, you see:", <br />, "> "+playerInput, ...prompts]) : errPrompt(); */
+    // ! ----------->
+
+    // ! [DEPRECATED] -- No longer working after persisting inventory -- Two identical instances of an object do not evaluate `true`
+    /* !!currentLocation.drops.filter(drop => !coords.drops.includes(drop)).length ? */
+    /* !!currentLocation.drops.filter(drop => !inventory.includes(drop)).length ? */
+    // ! ----------->
+    !!unlootedDrops.length ?
+    // ! [DEPRECATED] -- Initial proof of concept version
+    // setPrompts([currentLocation.drops.map(drop => <li key={drop.id}>{drop.name}</li>), "You opened the chest. Inside, you see:", <br />, "> "+playerInput, ...prompts]) 
+    // ! ----------->
+      setPrompts([unlootedDrops.map(drop => <li key={drop.id}>{drop.name}</li>), "You opened the chest. Inside, you see:", <br />, "> "+playerInput, ...prompts]) 
+    : 
+      setPrompts([`You opened the chest. Inside, you see... A reflection. Emptiness. *staresoffintothedistance*`, <br />, "> "+playerInput, ...prompts])
+  }
+
+  const cmdLoot = (lootQuery) => {    
+    let lootItem = currentLocation.drops.find(drop => drop.name.toLowerCase().includes(lootQuery))
+
+    return !!lootItem && !coords.drops.find(drop => drop.id === lootItem.id) ? setPrompts([`You have obtained ${lootItem.name}`, <br />, "> "+playerInput, ...prompts]) & setCoords({...coords, drops: [...coords.drops, lootItem]}) : errPrompt();
+
+    // ! [DEPRECATED] -- No longer working after persisting inventory -- Two identical instances of an object do not evaluate `true`
+    // return !!lootItem && !coords.drops.includes(lootItem) ? setPrompts([`You have obtained ${lootItem.name}`, <br />, "> "+playerInput, ...prompts]) & setCoords({...coords, drops: [coords.drops, lootItem]}) : errPrompt();
+    // return !!lootItem && !inventory.includes(lootItem) ? setPrompts([`You have obtained ${lootItem.name}`, <br />, "> "+playerInput, ...prompts]) & setInventory([...inventory, lootItem]) : errPrompt();
+    // ! ----------->
+
+    // ! [DEPRECATED] -- Alternative/Potential solves to select query Object from Drops
+    // currentLocation.drops.find(drop => drop.name.toLowerCase().includes(playerInput.toLowerCase().split(/ |loot|take/).filter(input => input != null).join(' ')))
+    // currentLocation.drops.find(drop => drop.name.toLowerCase().includes(playerInput.toLowerCase().split(/loot|take/).pop()))
+
+    // currentLocation.drops.find(drop => drop.name.toLowerCase() )
+    // findMap(coords.x, coords.y).drops.find(drop => drop.name.toLowerCase() === playerInput.split(/ |loot/))
+    // ! ----------->
+    
+    // ! CONCEPT
+    // if playerInput .includes(worldmaps.drops.split(" ")) && !coords.drops.includes(worldmaps.drops) {
+    //   setCoords({...coords, drops: [...coords.drops, worldmaps.drops.find(playerInput)]})
+    // }
   }
 
   return (

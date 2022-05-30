@@ -11,11 +11,11 @@ class Api::WorldmapsController < ApplicationController
     private
 
     def worldmap_search_params
-        params.permit(:x, :y)
+        params.permit(:id, :x, :y)
     end
 
     def worldmap_params
-        params.permit(:x, :y, :name, :description, :north, :east, :south, :west)
+        params.permit(:id, :x, :y, :name, :description, :north, :east, :south, :west)
     end
 
 end

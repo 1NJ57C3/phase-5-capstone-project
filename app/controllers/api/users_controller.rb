@@ -13,7 +13,7 @@ class Api::UsersController < ApplicationController
     end
 
     def show
-        render json: User.find_by!(id: session[:user_id]), status: 201
+        render json: User.find_by!(id: session[:user_id]), include: "gamesaves.drops", status: 201
     end
 
     private
