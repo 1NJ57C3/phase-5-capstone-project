@@ -3,4 +3,5 @@ class User < ApplicationRecord
     has_secure_password
 
     has_many :gamesaves
+    # has_many :drops, through: :gamesaves
 end

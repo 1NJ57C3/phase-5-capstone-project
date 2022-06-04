@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-// import logo from "./logo.svg";
 import "./styles/App.css";
 import Login from "./components/Login";
 import NavBar from "./components/NavBar";
@@ -99,7 +98,7 @@ function App() {
         r.json()
         .then(e => {
           console.error("GET Error: ", e);
-          setErrors(e.errors)
+          setErrors(Object.values(e))
         })
       }
     })
@@ -124,7 +123,7 @@ function App() {
         r.json()
         .then(e => {
           console.error("POST/UPDATE Error: ", e);
-          setErrors(e.errors);
+          setErrors(Object.values(e));
         })
       }
     })
@@ -144,7 +143,7 @@ function App() {
         r.json()
         .then(e => {
           console.error("DELETE Error: ", e);
-          setErrors(e.errors);
+          setErrors(Object.values(e));
         })
       }
     })
