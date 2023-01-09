@@ -27,9 +27,9 @@ m6 = Worldmap.create!(x:-2, y:1, name: "Large Clearing", description: "The sun i
 m7 = Worldmap.create!(x:0, y:-1, name: "South of the Starting Area", description: "You begin a casual stroll to the South. You don't know when it happened, but you suddenly find yourself in an empty white space. As you come to the realization that the forest you were in had completely disappeared, a sense of dread and unease washes over you. Panic sets in. You struggle to breathe, as though you've forgotten how. Resonating voices scream violently from... wh-- inside your head? \"YOU DO NOT BELONG HERE, MORTAL! TURN BACK, NOW!\"", north: true, east: false, south: false, west: false)
 
 puts "Generating Items..."
-i1 = m4.drops.create!(name: "Fishing Rod", description: "A run-of-the-mill fishing rod")
-i2 = m3.drops.create!(name: "Stone Sword", description: "The sword you pulled from the stone sculpture. It has no edge, but it somehow feels sturdy and balanced enough to wield, anyway.")
-i3 = m3.drops.create!(name: "Magical Sword", description: "Stone Sword, no longer! An energy emenates from the blade that you can almost see? Nah. Must be your eyes playing tricks.")
+i1 = m4.items.create!(name: "Fishing Rod", description: "A run-of-the-mill fishing rod")
+i2 = m3.items.create!(name: "Stone Sword", description: "The sword you pulled from the stone sculpture. It has no edge, but it somehow feels sturdy and balanced enough to wield, anyway.")
+i3 = m3.items.create!(name: "Magical Sword", description: "Stone Sword, no longer! An energy emenates from the blade that you can almost see? Nah. Must be your eyes playing tricks.")
 
 # * Worldmap keys/template
 # x:,y:,name:,description:,north:,east:,south:,west:

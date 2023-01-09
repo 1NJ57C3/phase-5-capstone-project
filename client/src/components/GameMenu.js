@@ -4,12 +4,12 @@ import GameCard from "./GameCard";
 function GameMenu({ FETCHDOWN, FETCHUP, FETCHDELETE, user, setUser, worldmaps, setWorldmaps }) {
 
     useEffect(() => {
-        FETCHDOWN("/worldmaps", setWorldmaps, "skipErr")
+        FETCHDOWN({ URL: "/worldmaps", ACTION: setWorldmaps, SKIPERRORHANDLING: true })
     }, [])
 
     const handleCreateGame = () => {
         const fetchAction = (game) => { setUser({...user, gamesaves: [...user.gamesaves, game]}) }
-        FETCHUP("/gamesaves", "POST", "", fetchAction)
+        FETCHUP({ URL: "/gamesaves", METHOD: "POST", OBJ: "", ACTION: fetchAction })
     }
 
     return (

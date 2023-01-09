@@ -10,25 +10,18 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_04_07_063022) do
+ActiveRecord::Schema[7.0].define(version: 2022_10_20_182808) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "plpgsql"
 
-  create_table "drops", force: :cascade do |t|
-    t.string "name"
-    t.text "description"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
-  create_table "game_drops", force: :cascade do |t|
+  create_table "game_items", force: :cascade do |t|
     t.bigint "gamesave_id", null: false
-    t.bigint "drop_id", null: false
+    t.bigint "item_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["drop_id"], name: "index_game_drops_on_drop_id"
-    t.index ["gamesave_id"], name: "index_game_drops_on_gamesave_id"
+    t.index ["gamesave_id"], name: "index_game_items_on_gamesave_id"
+    t.index ["item_id"], name: "index_game_items_on_item_id"
   end
 
   create_table "gamesaves", force: :cascade do |t|
@@ -40,6 +33,13 @@ ActiveRecord::Schema[7.0].define(version: 2022_04_07_063022) do
     t.index ["user_id"], name: "index_gamesaves_on_user_id"
   end
 
+  create_table "items", force: :cascade do |t|
+    t.string "name"
+    t.text "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "users", force: :cascade do |t|
     t.citext "username"
     t.string "password_digest"
@@ -47,13 +47,13 @@ ActiveRecord::Schema[7.0].define(version: 2022_04_07_063022) do
     t.datetime "updated_at", null: false
   end
 
-  create_table "world_drops", force: :cascade do |t|
+  create_table "world_items", force: :cascade do |t|
     t.bigint "worldmap_id", null: false
-    t.bigint "drop_id", null: false
+    t.bigint "item_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["drop_id"], name: "index_world_drops_on_drop_id"
-    t.index ["worldmap_id"], name: "index_world_drops_on_worldmap_id"
+    t.index ["item_id"], name: "index_world_items_on_item_id"
+    t.index ["worldmap_id"], name: "index_world_items_on_worldmap_id"
   end
 
   create_table "worldmaps", force: :cascade do |t|
@@ -69,9 +69,9 @@ ActiveRecord::Schema[7.0].define(version: 2022_04_07_063022) do
     t.datetime "updated_at", null: false
   end
 
-  add_foreign_key "game_drops", "drops"
-  add_foreign_key "game_drops", "gamesaves"
+  add_foreign_key "game_items", "gamesaves"
+  add_foreign_key "game_items", "items"
   add_foreign_key "gamesaves", "users"
-  add_foreign_key "world_drops", "drops"
-  add_foreign_key "world_drops", "worldmaps"
+  add_foreign_key "world_items", "items"
+  add_foreign_key "world_items", "worldmaps"
 end

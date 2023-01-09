@@ -1,4 +1,4 @@
-class DropSerializer < ActiveModel::Serializer
+class ItemSerializer < ActiveModel::Serializer
   attributes :id, :name, :description
   # has_many :worldmaps
   # has_many :gamesaves

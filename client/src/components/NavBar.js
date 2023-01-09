@@ -10,7 +10,7 @@ function NavBar({ user, setUser, FETCHDELETE }) {
 
   const handleLogout = (e) => {
     console.log("LOGGING OUT: ",user);
-    FETCHDELETE(`/logout`, () => setUser(null));
+    FETCHDELETE({ URL: `/logout`, ACTION: () => setUser(null)});
   }
 
   return(
