@@ -1,0 +1,71 @@
+Table users {
+  id int [pk]
+  username citext
+  password_digest string
+}
+
+Table gamesaves {
+  id int [pk]
+  x integer
+  y integer
+  user_id bigint [ref: > users.id]
+}
+
+Table game_items {
+  id int [pk]
+  gamesave_id bigint [ref: > gamesaves.id]
+  item_id bigint [ref: > items.id]
+}
+
+Table items {
+  id int [pk]
+  name string
+  type string [note: 'key, quest, consumable, stackable, etc.']
+  description text
+}
+
+Table entity_items {
+  id int [pk]
+  entity_id bigint [ref: > entities.id]
+  item_id bigint [ref: > items.id]
+}
+
+Table entities {
+  id int [pk]
+  type string [note:'npc, chest, door, switch, lever, etc.']
+  name string
+  description text
+}
+
+Table world_entities {
+  id int [pk]
+  worldmap_id bigint [ref: > worldmaps.id]
+  entity_id bigint [ref: > entities.id]
+}
+
+Table worldmaps {
+  id int [pk]
+  x integer
+  y integer
+  name string
+  description text
+  north boolean
+  east boolean
+  south boolean
+  west boolean
+}
+
+Table entity_interactions {
+  id int [pk]
+  entity_id bigint [ref: > entities.id]
+  interactions_id bigint [ref: > interactions.id]
+}
+
+Table interactions {
+  id int [pk]
+  name string
+  description text
+  unique_to_entity boolean
+  result_success text
+  result_failure text
+}

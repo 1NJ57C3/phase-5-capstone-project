@@ -10,7 +10,7 @@ function SignupForm({ toggleLogin, FETCHUP, setUser, errors, animateLabelUp, ani
   const handleSignup = (e) => {
     e.preventDefault();
     console.log("signupData: ", signupData);
-    FETCHUP("/signup", "POST", signupData, setUser)
+    FETCHUP({ URL: "/signup", METHOD: "POST", OBJ: signupData, ACTION: setUser })
   }
 
   return (

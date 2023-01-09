@@ -10,7 +10,7 @@ function LoginForm({ toggleLogin, FETCHUP, setUser, errors, animateLabelUp, anim
   const handleLogin = (e) => {
     e.preventDefault();
     console.log("login: ", loginfo.username);
-    FETCHUP("/login", "POST", loginfo, setUser);
+    FETCHUP({ URL: "/login", METHOD: "POST", OBJ: loginfo, ACTION: setUser });
   }
 
   return (

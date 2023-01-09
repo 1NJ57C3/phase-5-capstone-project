@@ -1,3 +1,5 @@
+/** General Styles */
+
 div.App {
   display: flex;
   flex-direction: column;
@@ -38,7 +40,7 @@ button:focus, button:hover {
   box-shadow: 0 0 6px 2px #a0a0a0;
 }
 
-/* ! Login/LoginForm/Signup Styles */
+/** Login/LoginForm/Signup Styles */
 
 div.Auth, form.Auth, p.Auth {
   background-color: black;
@@ -154,7 +156,7 @@ div.nav-controls {
   gap: 1rem;
 }
 
-/* * Main/Game Styles */
+/** Main/Game UI Styles */
 
 div.Game {
   display: flex;
@@ -178,33 +180,31 @@ div.game-prompts {
   /* padding: 0.6rem 1em 0 1em; */
 }
 
-div.game-input-wrapper {
+div.game-prompt {
+  flex-direction: column;
+  white-space: pre-line;
+}
+
+div.game-input {
   display: flex;
   flex-direction: row;
   align-items: center;
   width: 100%;
-  /* margin: 0; */
   /* padding: 0rem 1em 0.6rem 1em; */
 }
 
-div.game-input {
-  width: 100%;
-}
-
-div.game-input input#game-input, div.game-input input#game-input:focus {
-  /* border: 1px groove grey; */
+div.game-input input#game-input {
   box-shadow: none;
   transform: none;
   border: none;
   text-align: left;
   width: 100%;
-  /* margin: -1px; */
   margin: 0;
   padding: 0;
   outline: none;
 }
 
-/* ? Game Select && Card Styles  */
+/* TODO Game Select && Card Styles  */
 
 div.game-menu {
   display: flex;
@@ -245,21 +245,3 @@ div.game-card:hover {
   transform:scale(1.025, 1.025);
   box-shadow: 0 0 6px 1px #a0a0a0, inset 0 0 6px 1px  #a0a0a0;
 }
-
-
-/* ! create-react-app stuff */
-
-/* @media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-} */
-
-/* @keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-} */
