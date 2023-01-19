@@ -14,6 +14,7 @@ function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, setUser, worldmaps, setWo
 
   const startingMap = useMemo(() => findMap(0,0), [findMap]);
   const gamesave = user.gamesaves[0];
+  const gamesaveValidated = !!user.gamesaves.length && typeof(gamesave.x) === 'number' && typeof(gamesave.y) === 'number';
   const gridItems = currentLocation.items;
   const playerItems = gameState.items;
 
@@ -24,8 +25,7 @@ function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, setUser, worldmaps, setWo
         this.actor = actor;
         this.content = content;
       }
-    }
-    
+    }    
     return Prompt;
   }, []);
 
@@ -39,41 +39,43 @@ function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, setUser, worldmaps, setWo
     FETCHDOWN({ URL: "/worldmaps", ACTION: setWorldmaps, SKIPERRORHANDLING: true });
   }, [FETCHDOWN, setWorldmaps]);
 
-  const handleNewGame = useCallback(() => {
+  const handleNewGame = useCallback((init=false) => {
     console.log("INITIALIZING NEW GAME");
-    // const handleNewGame = useCallback((gameId = gameState) => {
-
     setGameState({ x:0, y:0, user_id: user.id, items: [] });
     setCurrentLocation(startingMap);
-    // setGameState({ ...gameId, x:0, y:0, user_id: user.id, items: [] });
-    setPrompts([ newGamePrompt ]);
 
-    console.log("GAME STARTED");
+    if (!!init) {
+      setPrompts([ newGamePrompt ]);
+      console.log("GAME STARTED");
+    } else {
+      console.error("Unable to load Gamesave... GAME RESTARTED");
+    }
   }, [newGamePrompt, startingMap, user.id]);
 
   const handleLoadGame = useCallback((init=false) => {
     console.log("INITIALIZING LOAD GAME SEQUENCE");
+    setGameState({ ...gamesave });
+    setCurrentLocation(findMap( gamesave.x, gamesave.y ));
+    !!init && setPrompts([ loadPrompt ]);
+    console.log("GAME LOADED: ", gamesave);
+  }, [findMap, gamesave, loadPrompt]);
 
-    return (!!user.gamesaves.length && gamesave.x != null ? (
-      console.log("Coordinates validation complete."),
-      setGameState({ ...gamesave }),
-      setCurrentLocation(findMap( gamesave.x, gamesave.y )),
-      !!init && setPrompts([loadPrompt]),
-      console.log("GAME LOADED: ", gamesave)
-    ) : (
-      console.log("Coordinates validation failed... Adjusting..."),
-      setGameState({ ...gamesave, x: 0, y: 0 }),
-      setCurrentLocation(startingMap),
-      !!init && setPrompts([newGamePrompt]),
-      console.log("Unable to load Gamesave... Game restarted")
-      // console.log("Unable to load Gamesave... Game restarted", gameState)
-    ))
-  }, [findMap, gamesave, loadPrompt, newGamePrompt, startingMap, user.gamesaves.length]);
+  const handleLoadValidation = useCallback((init=false) => {
+    !!gamesave && console.log("Existing save detected.");
+
+    if (gamesaveValidated) {
+      console.log("Coordinates validation complete.");
+      handleLoadGame(init);
+    } else {
+      console.error("Coordinates validation failed... Adjusting...");
+      handleNewGame(init);
+    };
+  }, [gamesave, gamesaveValidated, handleLoadGame, handleNewGame])
 
   useEffect(() => {
     // * New gamesaves stay pristine until player saves. Old gamesaves get loaded. Less visual bloat at GameMenu.
-    return !!Object.keys(user.gamesaves).length ? (console.log("Game initialized... Existing save detected."), handleLoadGame("init")) : (console.log("Game initialized..."), handleNewGame());
-  }, [worldmaps, handleLoadGame, handleNewGame, user]);
+    handleLoadValidation("init");
+  }, [handleLoadValidation]);
 
   const handleSaveGame = () => {
     // * if Game ID exists in gameState state
@@ -116,9 +118,6 @@ function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, setUser, worldmaps, setWo
       const filterLoad = splitInput.filter(input => input === ".load");
       !!filterLoad.length && cmdLoad();
 
-      // const filterDirection = splitInput.filter(input => input === "north" || input === "east" || input === "south" || input === "west");
-      // const filterDirection = splitInput.map(input => input.match(/^(north|east|south|west)+/gi));
-      // !!filterDirection.length && cmdMove(filterDirection[0]);
       const filterDirection = [ ...playerInput.matchAll(/north|east|south|west/g) ];
       !!filterDirection.length && cmdMove(filterDirection[0][0]);
 
@@ -203,16 +202,14 @@ function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, setUser, worldmaps, setWo
 
   const cmdLoad = () => {
     const output = new Prompt({ content: "Game loaded."});
-    const gameSaveValidated = !!user.gamesaves.length && !!gamesave.x && !!gamesave.y;
-    handleLoadGame();
-    // handleOutput(output);
-    setPrompts([ gameSaveValidated ? loadPrompt : newGamePrompt, output, inputPrompt, ...prompts ]);
+    handleLoadValidation();
+    setPrompts([ (gamesaveValidated ? loadPrompt : newGamePrompt), output, inputPrompt, ...prompts ]);
   };
 
   const cmdOpenChest = () => {
     // TODO Incomplete logic - Needs error verification & handling -- Does this grid even HAVE a chest?!
     const unlootedItems = gridItems.filter(gridItem => playerItems.some(playerItem => gridItem.id !== playerItem.id));
-      // * Show gridItems where the following is true : does playerItems have an item where ... gridItem's id does not match any playerItem's id?
+      // * Show gridItems where the following is true : playerItems have an item where ... gridItem's id does not match any playerItem's id
     const chestOpenPrompt = new Prompt({ content: `You opened the chest. Inside, you see: ${unlootedItems.map(drop => <li key={drop.id}>{drop.name}</li>)}`});
     const chestFailPrompt = new Prompt({ content: `You opened the chest. Isside, you see... A reflection. Emptiness. *staresoffintothedistance*`});
 
