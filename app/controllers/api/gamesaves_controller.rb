@@ -29,7 +29,7 @@ class Api::GamesavesController < ApplicationController
     private
 
     def save_gs_items(gs)
-        if gs_params[:items] then gs_params[:items].each{|d| gs.game_items.find_or_create_by!(item_id: d[:id])} end
+        if gs_params[:items] then gs_params[:items].each{|item| gs.game_items.find_or_create_by!(item_id: item[:id])} end
     end
 
     def gs_params
