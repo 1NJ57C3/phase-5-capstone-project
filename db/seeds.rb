@@ -9,8 +9,8 @@
 puts "🌱🌱 Seeding started... 🌱🌱"
 
 puts "🧍‍♂️🧍‍♀️ Creating Users... 🧍‍♂️🧍‍♀️"
-u1 = User.create!(username:"Injustice", password:"password")
-u2 = User.create!(username:"Tester", password:"password")
+u1 = User.create!(username:"Test0", password:"password")
+u2 = User.create!(username:"Test1", password:"password")
 
 puts "💾 Creating Gamesaves... 💾"
 g1 = u1.gamesaves.create!()
@@ -26,9 +26,13 @@ m6 = Worldmap.create!(x:-2, y:1, name: "Large Clearing", description: "The sun i
 m7 = Worldmap.create!(x:0, y:-1, name: "South of the Starting Area", description: "A big, white, empty space. Something's wrong. You feel like you shouldn't be here. Perhaps it's best we go back...", north: true, east: false, south: false, west: false)
 
 puts "Generating Items..."
-i1 = m4.items.create!(name: "Fishing Rod", description: "A run-of-the-mill fishing rod")
-i2 = m3.items.create!(name: "Stone Sword", description: "The sword you pulled from the stone sculpture. It has no edge, but it somehow feels sturdy and balanced enough to wield, anyway.")
-i3 = m3.items.create!(name: "Magical Sword", description: "Stone Sword, no longer! An energy emenates from the blade that you can almost see? Nah. Must be your eyes playing tricks.")
+i1 = Item.create!(name: "Fishing Rod", description: "A run-of-the-mill fishing rod")
+i2 = Item.create!(name: "Stone Sword", description: "The sword you pulled from the stone sculpture. It has no edge, but it somehow feels sturdy and balanced enough to wield, anyway.")
+i3 = Item.create!(name: "Magical Sword", description: "Stone Sword, no longer! An energy emenates from the blade that you can almost see? Nah. Must be your eyes playing tricks.")
+
+puts "Generating Entities..."
+e1 = m4.entities.create!(group: "container", name: "Chest", description: "A plain chest. I wonder what's inside?", items: [i1])
+e2 = m3.entities.create!(group: "sculpture", name: "Sculpture of Sword in Stone", description: "It appears to be a stone replica of a plain sword in a hunk of stone. But, like... why?", items: [i2, i3])
 
 # * Worldmap keys/template
 # x:,y:,name:,description:,north:,east:,south:,west:

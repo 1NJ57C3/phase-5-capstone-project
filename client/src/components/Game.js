@@ -12,11 +12,12 @@ function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, setUser, worldmaps, setWo
     return !!worldmaps.length && worldmaps.find(map => map.x === x && map.y === y);
   }, [worldmaps]);
 
-  const startingMap = useMemo(() => findMap(0,0), [findMap]);
+  const initsave = useRef(user.gamesaves[0]).current;
+  const startingMap = findMap(0,0);
   const gamesave = user.gamesaves[0];
   const gamesaveValidated = !!user.gamesaves.length && !!findMap(gamesave.x, gamesave.y);
-  const initsave = useRef(user.gamesaves[0]).current;
-  const gridItems = currentLocation.items;
+  const chestItems = currentLocation.entities?.find(entity => entity.group === "container")?.items;
+  const gridItems = currentLocation.entities?.reduce((acc, entity) => [...acc, ...entity.items], []);
   const playerItems = gameState.items;
 
   const Prompt = useMemo(() => {
@@ -115,13 +116,13 @@ function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, setUser, worldmaps, setWo
 
       const filterLoot = splitInput.filter(input => input === "take" || input === "loot");
       const filterLootItem = splitInput.filter(input => input !== "take" && input !== "loot");
-      !!filterLoot.length && cmdLoot(filterLootItem);
+      !!filterLoot.length && cmdLoot(filterLootItem.join(' '));
 
       // * Clear input bar
       setPlayerInput("");
 
       // * ERROR HANDLING
-      (filterOpenChest.length < 2 && ![...filterHelp, ...filterSave, ...filterLoad, ...filterDirection, ...filterOpenChest, ...filterLoot].length) && handleOutput([errorOutputPrompt]);
+      (filterOpenChest.length < 2 && ![...filterHelp, ...filterSave, ...filterLoad, ...filterDirection, ...filterOpenChest, ...filterLoot].length) && handleOutput(errorOutputPrompt);
     }
   };
 
@@ -131,31 +132,38 @@ function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, setUser, worldmaps, setWo
       : (/^e+/g).test(direction) && currentLocation.east ? { ...gameState, x: gameState.x + 1 }
       : (/^w+/g).test(direction) && currentLocation.west && { ...gameState, x: gameState.x - 1 };
     
-    if (!!Object.keys(newGameState).length && currentLocation[direction]) {
+    // if (!!Object.keys(newGameState).length && currentLocation[direction]) { // TODO redisocver bug newGameState validation solves -- was it because we were forcibly loading games/maps with invalid coordinates?
+    if (currentLocation[direction]) {
       const newLocation = findMap(newGameState.x, newGameState.y);
       const output = new Prompt({ actor: newLocation.name, content: newLocation.description});
       
       setGameState(newGameState);
       setCurrentLocation(newLocation);
-      handleOutput([output]);
+      handleOutput(output);
     } else {
-      handleOutput([errorOutputPrompt]);
+      handleOutput(errorOutputPrompt);
     }
   };
 
   const handleLoot = (lootQuery) => {
-    const targetItem = gridItems.find(item => item.name.toLowerCase().includes(lootQuery));
-    const lootPrompt = new Prompt({ content: `You have obtained ${targetItem.name}` });
-    const failPrompt = new Prompt({ content: `You're already holding the ${targetItem.name}...` });
-
-    return !!targetItem && !playerItems.find(item => item.id === targetItem.id) ? (
-      setGameState({ ...gameState, items: [...playerItems, targetItem] }),
-      handleOutput([lootPrompt])
-    ) : handleOutput([failPrompt]);
+    const targetItem = gridItems.find(item => item.name.toLowerCase().includes(lootQuery) || lootQuery.includes(item.name.toLowerCase()));
+      // TODO Idea: convert to RegEx .matchAll() for even greater flexibility
+    const lootPrompt = new Prompt({ content: `You have obtained ${targetItem?.name}` });
+    const failPrompt = new Prompt({ content: `You're already holding the ${targetItem?.name}...` });
+    
+    if (!targetItem) {
+      handleOutput(errorOutputPrompt);
+    } else if (!playerItems.find(item => item.id === targetItem.id)) {
+      setGameState({ ...gameState, items: [...playerItems, targetItem] });
+      handleOutput(lootPrompt);
+    } else {
+      handleOutput(failPrompt);
+    };
   };
 
   const handleOutput = output => {
-    setPrompts([ ...output, playerInputPrompt, ...prompts ])
+    if (typeof output === 'object' && !Array.isArray(output)) output = [ output ];
+    setPrompts([ ...output, playerInputPrompt, ...prompts ]);
   };
 
   const cmdHelp = () => {
@@ -186,7 +194,7 @@ function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, setUser, worldmaps, setWo
   const cmdSave = () => {
     const output = new Prompt({ content: "Game saved." });
     handleSaveGame();
-    handleOutput([output]);
+    handleOutput(output);
   };
 
   const cmdLoad = () => {
@@ -196,25 +204,21 @@ function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, setUser, worldmaps, setWo
   };
 
   const cmdOpenChest = () => {
-    // TODO Incomplete logic - Needs error verification & handling -- Does this grid even HAVE a chest?!
-    const unlootedItems = gridItems.filter(gridItem => playerItems.some(playerItem => gridItem.id !== playerItem.id));
-      // * Show gridItems where gridItem's id does not match any playerItem's id
-    const unlootedItemsList = unlootedItems.map(item => '• ' + item.name).join('\n');
-    const chestOpenPrompt = new Prompt({ content: `You opened the chest. Inside, you see: \n${unlootedItemsList}` });
-    const chestFailPrompt = new Prompt({ content: `You opened the chest. Inside, you see... A reflection. Emptiness. *staresoffintothedistance*` });
+    if (!!chestItems?.length) {
+      const unlootedItems = chestItems.filter(chestItem => !playerItems.some(playerItem => chestItem.id === playerItem.id));
+        // * Show chestItems where playerItems do not have playerItems that match chestItem's id property
+      const unlootedItemsList = unlootedItems.map(item => '• ' + item.name).join('\n');
+      const chestOpenPrompt = new Prompt({ content: `You opened the chest. Inside, you see: \n${unlootedItemsList}` });
+      const chestFailPrompt = new Prompt({ content: `You opened the chest. Inside, you see... A reflection. Emptiness. *staresoffintothedistance*` });
 
-    // TODO potential solve for chest validation
-    // if (currentLocation.entities.includes('treasure chest')) {
-
-    if (!!gridItems.length) {
-      handleOutput([ !!unlootedItems.length ? chestOpenPrompt : chestFailPrompt ]);
+      handleOutput(!!unlootedItems.length ? chestOpenPrompt : chestFailPrompt);
     } else {
-      handleOutput([errorOutputPrompt]);
+      handleOutput(errorOutputPrompt);
     }
   };
 
   const cmdLoot = (lootQuery) => {
-    !!lootQuery.length && !!gridItems.length ? handleLoot(lootQuery) : handleOutput([errorOutputPrompt]);
+    !!lootQuery.length && !!gridItems.length ? handleLoot(lootQuery) : handleOutput(errorOutputPrompt);
   };
 
   useEffect(() => {

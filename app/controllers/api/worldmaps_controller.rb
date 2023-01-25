@@ -1,11 +1,11 @@
 class Api::WorldmapsController < ApplicationController
 
     def index
-        render json: Worldmap.all
+        render json: Worldmap.all, include: "entities.items"
     end
 
     def show
-        render json: Worldmap.find_by!(worldmap_search_params)
+        render json: Worldmap.find_by!(worldmap_search_params), include: "entities.items"
     end
 
     private

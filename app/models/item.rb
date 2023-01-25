@@ -1,4 +1,6 @@
 class Item < ApplicationRecord
+    validates :name, :description, presence: true
+    
     has_many :world_items
     has_many :worldmaps, through: :world_items
     

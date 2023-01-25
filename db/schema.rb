@@ -10,10 +10,27 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_10_20_182808) do
+ActiveRecord::Schema[7.0].define(version: 2023_01_23_225820) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "plpgsql"
+
+  create_table "entities", force: :cascade do |t|
+    t.string "group"
+    t.string "name"
+    t.text "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "entity_items", force: :cascade do |t|
+    t.bigint "entity_id", null: false
+    t.bigint "item_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["entity_id"], name: "index_entity_items_on_entity_id"
+    t.index ["item_id"], name: "index_entity_items_on_item_id"
+  end
 
   create_table "game_items", force: :cascade do |t|
     t.bigint "gamesave_id", null: false
@@ -47,6 +64,15 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_20_182808) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "world_entities", force: :cascade do |t|
+    t.bigint "worldmap_id", null: false
+    t.bigint "entity_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["entity_id"], name: "index_world_entities_on_entity_id"
+    t.index ["worldmap_id"], name: "index_world_entities_on_worldmap_id"
+  end
+
   create_table "world_items", force: :cascade do |t|
     t.bigint "worldmap_id", null: false
     t.bigint "item_id", null: false
@@ -69,9 +95,13 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_20_182808) do
     t.datetime "updated_at", null: false
   end
 
+  add_foreign_key "entity_items", "entities"
+  add_foreign_key "entity_items", "items"
   add_foreign_key "game_items", "gamesaves"
   add_foreign_key "game_items", "items"
   add_foreign_key "gamesaves", "users"
+  add_foreign_key "world_entities", "entities"
+  add_foreign_key "world_entities", "worldmaps"
   add_foreign_key "world_items", "items"
   add_foreign_key "world_items", "worldmaps"
 end
