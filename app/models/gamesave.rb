@@ -1,4 +1,6 @@
 class Gamesave < ApplicationRecord
+  # validates :x, :y, :user_id, presence: true
+  
   belongs_to :user
 
   has_many :game_items

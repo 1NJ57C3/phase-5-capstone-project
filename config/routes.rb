@@ -5,7 +5,10 @@ Rails.application.routes.draw do
     # resources :world_items
     resources :game_items, only: [:index, :create, :destroy]
     resources :items, only: [:index, :show]
-    # TODO resources :users, only: [:index] # * Included for development/testing purposes -- remember to remove
+    resources :entity_items, only: [:index, :create, :destroy]
+    resources :world_entities, only: [:index, :create, :destroy]
+    resources :entities, only: [:index, :show]
+      # TODO resources :users, only: [:index] # * Included for development/testing purposes -- remember to remove
     # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
   
     # Defines the root path route ("/")
