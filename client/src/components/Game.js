@@ -52,6 +52,7 @@ function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, setUser, worldmaps, setWo
     console.log("GAME LOADED: ", game);
   }, [findMap, loadGameMapPrompt]);
 
+  // TODO : RENAME -- This is only supposed to manage `selection` for `game initialization`
   const handleLoadValidation = useCallback(({game, validator, init=false}) => {
     console.log("Checking for valid save file...");
     if (validator) {
@@ -62,6 +63,8 @@ function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, setUser, worldmaps, setWo
       handleNewGame(init);
     } else if (!validator && !init) {
       console.error("Validation failed. Load sequence aborted.");
+      // TODO Add prompt for failure
+      // ! `prompts` is dumping whenever we use `handleOutput(errorOutputPrompt);`
     } else {
       console.error('New error found in handleLoadValidation');
     };
@@ -100,40 +103,65 @@ function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, setUser, worldmaps, setWo
       const splitInput = playerInput.toLowerCase().split(/\s/g);
 
       const filterHelp = splitInput.filter(input => input === ".help");
-      !!filterHelp.length && cmdHelp();
-
       const filterSave = splitInput.filter(input => input === ".save");
-      !!filterSave.length && cmdSave();
-
       const filterLoad = splitInput.filter(input => input === ".load");
-      !!filterLoad.length && cmdLoad();
-
-      const filterDirection = [ ...playerInput.matchAll(/north|east|south|west/gi) ];
-      !!filterDirection.length && cmdMove(filterDirection[0][0].toLowerCase());
-
-      const filterOpenChest = splitInput.filter(input => input === "open" || input === "chest");
-      filterOpenChest.length >= 2 && cmdOpenChest();
-
+      const filterDirection = playerInput.match(/north|east|south|west/gi);
+      const filterOpenChest = (/open.+chest/gi).test(playerInput);
       const filterLoot = splitInput.filter(input => input === "take" || input === "loot");
       const filterLootItem = splitInput.filter(input => input !== "take" && input !== "loot");
-      !!filterLoot.length && cmdLoot(filterLootItem.join(' '));
+
+      switch (true) {
+        case !!filterHelp.length:
+          cmdHelp();
+          break;
+        case !!filterSave.length:
+          cmdSave();
+          break;
+        case !!filterLoad.length:
+          cmdLoad();
+          break;
+        case !!filterDirection:
+          cmdMove(filterDirection[0].toLowerCase());
+          break;
+        case !!filterOpenChest:
+          cmdOpenChest();
+          break;
+        case !!filterLoot.length:
+          cmdLoot(filterLootItem.join(' '));
+          break;
+        default:
+          handleOutput(errorOutputPrompt);
+          break;
+      }
 
       // * Clear input bar
       setPlayerInput("");
 
-      // * ERROR HANDLING
-      (filterOpenChest.length < 2 && ![...filterHelp, ...filterSave, ...filterLoad, ...filterDirection, ...filterOpenChest, ...filterLoot].length) && handleOutput(errorOutputPrompt);
+      // ? ERROR HANDLING - introduce `actionFailed` boolean into handlers?
     }
   };
 
   const handleMove = (direction) => {
-    const newGameState = (/^n+/g).test(direction) && currentLocation.north ? { ...gameState, y: gameState.y + 1 }
-      : (/^s+/g).test(direction) && currentLocation.south ? { ...gameState, y: gameState.y - 1 }
-      : (/^e+/g).test(direction) && currentLocation.east ? { ...gameState, x: gameState.x + 1 }
-      : (/^w+/g).test(direction) && currentLocation.west && { ...gameState, x: gameState.x - 1 };
-    
-    // if (!!Object.keys(newGameState).length && currentLocation[direction]) { // TODO redisocver bug newGameState validation solves -- was it because we were forcibly loading games/maps with invalid coordinates?
     if (currentLocation[direction]) {
+      let newGameState = { ...gameState };
+      
+      switch (direction) {
+        case "north":
+          newGameState.y += 1;
+          break;
+        case "east":
+          newGameState.x += 1;
+          break;
+        case "south":
+          newGameState.y -= 1;
+          break;
+        case "west":
+          newGameState.x -= 1;
+          break;
+        default:
+          break;
+      }
+
       const newLocation = findMap(newGameState.x, newGameState.y);
       const output = new Prompt({ actor: newLocation.name, content: newLocation.description});
       
@@ -147,7 +175,7 @@ function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, setUser, worldmaps, setWo
 
   const handleLoot = (lootQuery) => {
     const targetItem = gridItems.find(item => item.name.toLowerCase().includes(lootQuery) || lootQuery.includes(item.name.toLowerCase()));
-      // TODO Idea: convert to RegEx .matchAll() for even greater flexibility
+      // TODO : convert to RegEx .matchAll() for even greater flexibility?
     const lootPrompt = new Prompt({ content: `You have obtained ${targetItem?.name}` });
     const failPrompt = new Prompt({ content: `You're already holding the ${targetItem?.name}...` });
     
@@ -218,7 +246,7 @@ function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, setUser, worldmaps, setWo
   };
 
   const cmdLoot = (lootQuery) => {
-    !!lootQuery.length && !!gridItems.length ? handleLoot(lootQuery) : handleOutput(errorOutputPrompt);
+    !!lootQuery && !!gridItems.length ? handleLoot(lootQuery) : handleOutput(errorOutputPrompt);
   };
 
   useEffect(() => {
@@ -229,7 +257,16 @@ function Game({ FETCHDOWN, FETCHUP, FETCHDELETE, user, setUser, worldmaps, setWo
   useEffect(() => {
     // * New gamesaves stay pristine until player saves. Old gamesaves get loaded. Less visual bloat at GameMenu.
     handleLoadValidation({game: initsave, validator: gamesaveValidated, init: true});
-  }, [initsave, gamesaveValidated, handleLoadValidation]);
+  }, [
+    initsave,
+    gamesaveValidated, // !
+    handleLoadValidation // !
+  ]);
+
+  // ! on new game init
+  // ? gamesaveValidated === false
+  // ! on new game `.save`
+  // ? gamesaveValidated === true
 
   return (
     <div className="Game" onClick={e => console.log(e)}>
